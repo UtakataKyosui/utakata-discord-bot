@@ -3,6 +3,7 @@ mod utils;
 mod entities;
 mod migration;
 mod cron;
+mod check;
 
 
 use std::str::FromStr;
@@ -10,7 +11,7 @@ use std::str::FromStr;
 use apalis::{layers::{retry::RetryPolicy, WorkerBuilderExt}, prelude::{WorkerBuilder, WorkerFactoryFn}};
 use cron::dairy_charge::dairy_charge;
 use sea_orm::SqlxPostgresConnector;
-use sea_orm_migration::prelude::*;
+use sea_orm_migration::{connection, prelude::*};
 use tokio::sync::Mutex;
 use crate::migration::migrator::Migrator;
 use anyhow::Context as _;
@@ -20,7 +21,7 @@ use serenity::{all::EventHandler, async_trait};
 use shuttle_runtime::SecretStore;
 use shuttle_serenity::ShuttleSerenity;
 use apalis_cron::{CronStream, Schedule};
-
+use std::sync::Arc;
 
 #[allow(unused)]
 struct Handler;
@@ -41,12 +42,18 @@ async fn main(
 ) -> ShuttleSerenity {
     
     // Get the discord token set in `Secrets.toml`
-    let discord_token = secret_store
-        .get("DISCORD_TOKEN")
-        .context("'DISCORD_TOKEN' was not found")?;
+    let discord_token = check::token_check(&secret_store);
 
-    let connection = SqlxPostgresConnector::from_sqlx_postgres_pool(pool.clone());  
-    Migrator::up(&connection, None).await.expect("Migration Error");
+    let connection = Arc::new(SqlxPostgresConnector::from_sqlx_postgres_pool(pool.clone())); 
+    Migrator::up(connection.as_ref(), None).await.expect("Migration Error");
+
+    let schedule = Schedule::from_str("@daily").unwrap();
+    WorkerBuilder::new("dairy-charge")
+        .retry(RetryPolicy::retries(5))
+        .data(connection.clone())
+        .backend(CronStream::new(schedule))
+        .build_fn(dairy_charge)
+        .run().await;
     
 
     let framework = poise::Framework::builder()
@@ -63,7 +70,7 @@ async fn main(
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
-                    db: Mutex::from(connection)
+                    db: Mutex::from(connection.as_ref().clone())
                 })
             })
         })
@@ -73,14 +80,6 @@ async fn main(
         .framework(framework)
         .await
         .map_err(shuttle_runtime::CustomError::new)?;
-
-    /* let schedule = Schedule::from_str("@daily").unwrap();
-    WorkerBuilder::new("dairy-charge")
-        .retry(RetryPolicy::retries(5))
-        .data(connection.clone())
-        .backend(CronStream::new(schedule))
-        .build_fn(dairy_charge)
-        .run().await; */
         
     Ok(client.into())
 }
