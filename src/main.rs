@@ -37,7 +37,7 @@ impl EventHandler for Handler {
 async fn main(
     #[shuttle_runtime::Secrets] secret_store: SecretStore,
     #[shuttle_shared_db::Postgres(
-        local_uri = "postgres://utakata:1336@postgres:5432/utakata_db"
+        local_uri = "postgres://utakata:1336@localhost:5432/utakata_db"
     )] pool: sqlx::PgPool ,
 ) -> ShuttleSerenity {
     
