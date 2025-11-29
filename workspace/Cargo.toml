@@ -1,0 +1,29 @@
+[package]
+name = "liver-for-discord-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.66"
+apalis = {version = "0.6.4",features = ["retry"]}
+apalis-cron = "0.6.4"
+apalis-sql = {version = "0.6.4",features = ["postgres"]}
+chrono = {version = "0.4.39",features = ["serde","clock"]}
+dotenv = "0.15.0"
+emojis = "0.6.4"
+log = "0.4.25"
+poise = "0.6.1"
+rand = "0.8.5"
+reqwest = { version = "0.12.12", features = ["json"] }
+sea-orm = {version = "1.1.4",features=["sqlx-postgres"]}
+sea-orm-migration = {version = "1.1.4",features = ["sqlx-postgres","cli"]}
+serde = {version = "1.0.197",features = ["derive"]}
+serde_json = "1.0.133"
+serenity = { version = "0.12.0", default-features = false, features = ["client", "gateway", "rustls_backend", "model","framework","standard_framework"] }
+shuttle-persist = "0.51.0"
+shuttle-runtime = "0.51.0"
+shuttle-serenity = "0.51.0"
+shuttle-shared-db = {version = "0.51.0",features = ["postgres","sqlx"]}
+sqlx = {version = "0.8.3",features = ["postgres","json","tls-native-tls"]}
+tokio = "1.26.0"
+tracing = "0.1.37"

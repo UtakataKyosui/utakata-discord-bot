@@ -1,0 +1,17 @@
+name: clippy-action
+on: [pull_request]
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy
+    - uses: giraffate/clippy-action@v1
+      with:
+        clippy_flags: -- -Dwarnings
+        level: warning
+        reporter: 'github-pr-review'
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        workdir: "./workspace"
