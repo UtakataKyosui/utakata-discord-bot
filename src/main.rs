@@ -47,14 +47,18 @@ async fn main(
     let connection = Arc::new(SqlxPostgresConnector::from_sqlx_postgres_pool(pool.clone())); 
     Migrator::up(connection.as_ref(), None).await.expect("Migration Error");
 
-    let schedule = Schedule::from_str("@daily").unwrap();
-    WorkerBuilder::new("dairy-charge")
-        .retry(RetryPolicy::retries(5))
-        .data(connection.clone())
-        .backend(CronStream::new(schedule))
-        .build_fn(dairy_charge)
-        .run().await;
-    
+    tokio::spawn({
+        let connection = connection.clone();
+        async move {
+            let schedule = Schedule::from_str("@daily").unwrap();
+            WorkerBuilder::new("dairy-charge")
+                .retry(RetryPolicy::retries(5))
+                .data(connection.clone())
+                .backend(CronStream::new(schedule))
+                .build_fn(dairy_charge)
+                .run().await;
+        }
+    });
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
