@@ -1,15 +1,4 @@
 services:
-  utakta_rust_discord_bot:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - ../workspace:/workspace:type=bind,consistency=cached
-    working_dir: /workspace
-    command: /bin/bash
-    tty: true
-    env_file:
-      - .env 
   postgres:
     image: postgres:latest
     hostname: postgres
