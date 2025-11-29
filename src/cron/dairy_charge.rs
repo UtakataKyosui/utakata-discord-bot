@@ -1,5 +1,5 @@
 use chrono::{DateTime,Utc};
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityOrSelect, EntityTrait, Set};
+use sea_orm::{ActiveModelTrait, DatabaseConnection,EntityTrait, Set};
 use serde::{Deserialize,Serialize};
 use apalis::prelude::*;
 use crate::entities::{prelude::Record, record::ActiveModel};
@@ -14,7 +14,7 @@ impl From<DateTime<Utc>> for DairyCharger {
     }
 }
 
-pub async fn dairy_charge(job: DairyCharger,data: Data<DatabaseConnection>) {
+pub async fn dairy_charge(_job: DairyCharger,data: Data<DatabaseConnection>) {
     println!("Dairy charge job Start!");
     let all_user = Record::find()
         .all(&*data)
