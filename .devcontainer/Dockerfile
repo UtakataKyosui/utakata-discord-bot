@@ -1,4 +1,4 @@
-FROM rust:1.83.0-bullseye
+FROM rust:1.90.0-bullseye
 
 ARG USER_NAME=utakata
 ARG USER_ID=1000
