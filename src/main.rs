@@ -1,5 +1,4 @@
 mod commands;
-mod utils;
 mod entities;
 mod migration;
 mod cron;
@@ -87,3 +86,4 @@ async fn main(
         
     Ok(client.into())
 }
+
